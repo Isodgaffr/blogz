@@ -106,7 +106,7 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             session['username'] = username
-            return redirect('/newpost')
+            return redirect('/index')
         else:
             return render_template('signup.html',
             username=username,
