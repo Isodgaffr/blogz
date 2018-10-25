@@ -10,15 +10,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.secret_key = 'as8d7f98a!@qw546era#$#@$'
 db = SQLAlchemy(app)
 
-# Created Blog class with ID, title, body, and owner_id columns.
-# Relational database established between Blog & User through a foreign key.
+
+
 class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.Text)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     pub_date = db.Column(db.DateTime)
-    # Class initializations. Is that a word? Edit: Just googled it; it is.
+
     def __init__(self, title, body, owner, pub_date=None):
         self.title = title
         self.body = body
@@ -27,7 +27,7 @@ class Blog(db.Model):
             pub_date = datetime.utcnow()
         self.pub_date = pub_date
 
-# Created User class with ID, username, hashword, and posts.
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
@@ -38,21 +38,21 @@ class User(db.Model):
         self.username = username
         self.pw_hash = make_pw_hash(password)
 
-# Required so that user is allowed to visit specific routes prior to logging in.
-# Redirects to login page once encountering a page without permission.
+
+
 @app.before_request
 def require_login():
     allowed_routes = ['login', 'signup', 'blog', 'index', 'static']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
-# Index route, redirects to home.
+
 @app.route('/')
 def index():
     users = User.query.all()
     return render_template('index.html', users=users)
 
-# Login route - validation and verification of user information in database.
+
 @app.route('/login', methods=['POST','GET'])
 def login():
     username_error = ""
@@ -73,7 +73,6 @@ def login():
 
     return render_template('login.html')
 
-#  Signup route - validation and verification of input.
 @app.route("/signup", methods=['POST', 'GET'])
 def signup():
     if request.method == 'POST':
@@ -102,7 +101,6 @@ def signup():
             verify_error = "Passwords do not match."
         if exist:
             username_error = "Username already taken."
-        # If fields are good, continue to creating session with new username and password.
         if len(username) > 3 and len(password) > 3 and password == verify and not exist:
             new_user = User(username, password)
             db.session.add(new_user)
@@ -119,14 +117,13 @@ def signup():
 
     return render_template('signup.html')
 
-# Blog route with all user posts.
-# TODO - Paginate Blog posts, limiting to 5 posts per page.
+
 @app.route('/blog', methods=['POST', 'GET'])
 def blog():
     blog_id = request.args.get('id')
     user_id = request.args.get('userid')
-    # posts = Blog.query.all()
-    # Recent blog posts order to top.
+    
+    
     posts = Blog.query.order_by(Blog.pub_date.desc())
 
     if blog_id:
@@ -138,7 +135,7 @@ def blog():
 
     return render_template('blog.html', posts=posts)
 
-# New post route. Redirects to post page.
+
 @app.route('/newpost')
 def post():
     return render_template('newpost.html', title="New Post")
@@ -171,7 +168,7 @@ def newpost():
             body_error = body_error
         )
 
-# Logout - deletes current user session, redirects to index.
+
 @app.route('/logout')
 def logout():
     del session['username']
